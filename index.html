@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Analytics</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Weather Analytics</h1>
+
+    <label for="city">Enter City:</label>
+    <input type="text" id="city">
+
+    <label for="field">Select Field:</label>
+    <select id="field">
+        <option value="temperature">Temperature (°C)</option>
+        <option value="humidity">Humidity (%)</option>
+        <option value="wind_speed">Wind Speed (m/s)</option>
+    </select>
+
+    <button onclick="fetchWeather()">Get Weather</button>
+
+    <div id="metrics">
+        <h2>Statistics</h2>
+        <p id="avg"></p>
+        <p id="min"></p>
+        <p id="max"></p>
+        <p id="stdDev"></p>
+    </div>
+
+    <canvas id="weatherChart"></canvas>
+
+    <script>
+        async function fetchWeather() {
+            const city = document.getElementById("city").value;
+            const field = document.getElementById("field").value;
+            if (!city) return alert("Enter a city name!");
+
+            // 📌 Запрашиваем статистику
+            const statsResponse = await fetch(`http://localhost:5000/api/weather/metrics?city=${city}&field=${field}`);
+            const stats = await statsResponse.json();
+
+            if (stats.error) {
+                alert(stats.error);
+                return;
+            }
+
+            // 📌 Отображаем статистику на странице
+            document.getElementById("avg").textContent = `Average ${field}: ${stats.avg} ${field === 'temperature' ? '°C' : field === 'humidity' ? '%' : 'm/s'}`;
+            document.getElementById("min").textContent = `Min ${field}: ${stats.min} ${field === 'temperature' ? '°C' : field === 'humidity' ? '%' : 'm/s'}`;
+            document.getElementById("max").textContent = `Max ${field}: ${stats.max} ${field === 'temperature' ? '°C' : field === 'humidity' ? '%' : 'm/s'}`;
+            document.getElementById("stdDev").textContent = `Standard Deviation: ${stats.stdDev}`;
+
+            // 📌 Запрашиваем историю по выбранному полю
+            const response = await fetch(`http://localhost:5000/api/weather/history?city=${city}&field=${field}`);
+            const data = await response.json();
+
+            const timestamps = data.map(item => new Date(item.timestamp).toLocaleString());
+            const values = data.map(item => item[field]);
+
+            const ctx = document.getElementById("weatherChart").getContext("2d");
+            new Chart(ctx, {
+                type: "line",
+                data: {
+                    labels: timestamps,
+                    datasets: [{
+                        label: `${field} in ${city}`,
+                        data: values,
+                        borderColor: "blue",
+                        borderWidth: 2,
+                        fill: false
+                    }]
+                },
+                options: { responsive: true }
+            });
+        }
+    </script>
+</body>
+</html>
