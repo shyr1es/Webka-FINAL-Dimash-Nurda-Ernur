@@ -1,81 +1,206 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Weather Analytics</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🌤️ Weather Analytics</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>Weather Analytics</h1>
+  <button class="lang-switch" onclick="toggleLanguage()">🌐 EN/RU</button>
+  <h1 id="title">🌤️ Weather Analytics</h1>
 
-    <label for="city">Enter City:</label>
+  <!-- 📝 Регистрация -->
+  <div id="register-section">
+    <h2 id="reg-title">📝 Register</h2>
+    <input type="text" id="reg-username" placeholder="Username">
+    <input type="password" id="reg-password" placeholder="Password">
+    <button onclick="register()" id="reg-btn">Register</button>
+    <p id="register-error" style="color: red;"></p>
+    <p id="reg-login-link">
+      Already have an account? <button class="link-btn" onclick="showLogin()">Login here</button>
+    </p>
+  </div>
+
+  <!-- 🔑 Вход -->
+  <div id="login-section">
+    <h2 id="login-title">🔑 Login</h2>
+    <input type="text" id="login-username" placeholder="Username">
+    <input type="password" id="login-password" placeholder="Password">
+    <button onclick="login()" id="login-btn">Login</button>
+    <p id="login-error" style="color: red;"></p>
+    <p id="login-reg-link">
+      Don't have an account? <button class="link-btn" onclick="showRegister()">Register here</button>
+    </p>
+  </div>
+
+  <!-- 🌦️ Аналитика погоды -->
+  <div id="weather-section">
+    <h2 id="weather-title">📈 Weather Data</h2>
+    <label for="city" id="city-label">🌍 Enter City:</label>
     <input type="text" id="city">
-
-    <label for="field">Select Field:</label>
+    <label for="field" id="field-label">📊 Select Field:</label>
     <select id="field">
-        <option value="temperature">Temperature (°C)</option>
-        <option value="humidity">Humidity (%)</option>
-        <option value="wind_speed">Wind Speed (m/s)</option>
+      <option value="temperature">🌡️ Temperature (°C)</option>
+      <option value="humidity">💧 Humidity (%)</option>
+      <option value="wind_speed">🌬️ Wind Speed (m/s)</option>
     </select>
-
-    <button onclick="fetchWeather()">Get Weather</button>
+    <button onclick="fetchWeather()" id="get-weather-btn">Get Weather</button>
+    <button onclick="logout()" id="logout-btn" class="logout-btn">🚪 Logout</button>
 
     <div id="metrics">
-        <h2>Statistics</h2>
-        <p id="avg"></p>
-        <p id="min"></p>
-        <p id="max"></p>
-        <p id="stdDev"></p>
+      <h3 id="stats-title">📊 Statistics</h3>
+      <p id="avg"></p>
+      <p id="min"></p>
+      <p id="max"></p>
+      <p id="stdDev"></p>
     </div>
-
     <canvas id="weatherChart"></canvas>
+  </div>
 
-    <script>
-        async function fetchWeather() {
-            const city = document.getElementById("city").value;
-            const field = document.getElementById("field").value;
-            if (!city) return alert("Enter a city name!");
+  <script>
+    let token = null;
+    let language = "en";
+    let chartInstance = null;
 
-            // 📌 Запрашиваем статистику
-            const statsResponse = await fetch(`http://localhost:5000/api/weather/metrics?city=${city}&field=${field}`);
-            const stats = await statsResponse.json();
+    window.onload = () => showRegister();
 
-            if (stats.error) {
-                alert(stats.error);
-                return;
-            }
+    function toggleLanguage() {
+      language = language === "en" ? "ru" : "en";
+      updateLanguage();
+    }
 
-            // 📌 Отображаем статистику на странице
-            document.getElementById("avg").textContent = `Average ${field}: ${stats.avg} ${field === 'temperature' ? '°C' : field === 'humidity' ? '%' : 'm/s'}`;
-            document.getElementById("min").textContent = `Min ${field}: ${stats.min} ${field === 'temperature' ? '°C' : field === 'humidity' ? '%' : 'm/s'}`;
-            document.getElementById("max").textContent = `Max ${field}: ${stats.max} ${field === 'temperature' ? '°C' : field === 'humidity' ? '%' : 'm/s'}`;
-            document.getElementById("stdDev").textContent = `Standard Deviation: ${stats.stdDev}`;
+    function updateLanguage() {
+      if (language === "ru") {
+        document.getElementById("title").innerText = "🌤️ Аналитика Погоды";
+        document.getElementById("reg-title").innerText = "📝 Регистрация";
+        document.getElementById("reg-btn").innerText = "Зарегистрироваться";
+        document.getElementById("reg-login-link").innerHTML =
+          'Уже есть аккаунт? <button class="link-btn" onclick="showLogin()">Войти</button>';
+        document.getElementById("login-title").innerText = "🔑 Вход";
+        document.getElementById("login-btn").innerText = "Войти";
+        document.getElementById("login-reg-link").innerHTML =
+          'Нет аккаунта? <button class="link-btn" onclick="showRegister()">Зарегистрироваться</button>';
+        document.getElementById("weather-title").innerText = "📈 Данные о погоде";
+        document.getElementById("city-label").innerText = "🌍 Введите город:";
+        document.getElementById("field-label").innerText = "📊 Выберите параметр:";
+        document.getElementById("get-weather-btn").innerText = "Получить данные";
+        document.getElementById("logout-btn").innerText = "🚪 Выход";
+        document.getElementById("stats-title").innerText = "📊 Статистика";
+      } else {
+        document.getElementById("title").innerText = "🌤️ Weather Analytics";
+        document.getElementById("reg-title").innerText = "📝 Register";
+        document.getElementById("reg-btn").innerText = "Register";
+        document.getElementById("reg-login-link").innerHTML =
+          'Already have an account? <button class="link-btn" onclick="showLogin()">Login here</button>';
+        document.getElementById("login-title").innerText = "🔑 Login";
+        document.getElementById("login-btn").innerText = "Login";
+        document.getElementById("login-reg-link").innerHTML =
+          'Don\'t have an account? <button class="link-btn" onclick="showRegister()">Register here</button>';
+        document.getElementById("weather-title").innerText = "📈 Weather Data";
+        document.getElementById("city-label").innerText = "🌍 Enter City:";
+        document.getElementById("field-label").innerText = "📊 Select Field:";
+        document.getElementById("get-weather-btn").innerText = "Get Weather";
+        document.getElementById("logout-btn").innerText = "🚪 Logout";
+        document.getElementById("stats-title").innerText = "📊 Statistics";
+      }
+    }
 
-            // 📌 Запрашиваем историю по выбранному полю
-            const response = await fetch(`http://localhost:5000/api/weather/history?city=${city}&field=${field}`);
-            const data = await response.json();
+    function showRegister() {
+      document.getElementById("register-section").style.display = "block";
+      document.getElementById("login-section").style.display = "none";
+      document.getElementById("weather-section").style.display = "none";
+      updateLanguage();
+    }
 
-            const timestamps = data.map(item => new Date(item.timestamp).toLocaleString());
-            const values = data.map(item => item[field]);
+    function showLogin() {
+      document.getElementById("register-section").style.display = "none";
+      document.getElementById("login-section").style.display = "block";
+      document.getElementById("weather-section").style.display = "none";
+      updateLanguage();
+    }
 
-            const ctx = document.getElementById("weatherChart").getContext("2d");
-            new Chart(ctx, {
-                type: "line",
-                data: {
-                    labels: timestamps,
-                    datasets: [{
-                        label: `${field} in ${city}`,
-                        data: values,
-                        borderColor: "blue",
-                        borderWidth: 2,
-                        fill: false
-                    }]
-                },
-                options: { responsive: true }
-            });
-        }
-    </script>
+    function logout() {
+      token = null;
+      showLogin();
+    }
+
+    async function register() {
+      const username = document.getElementById("reg-username").value;
+      const password = document.getElementById("reg-password").value;
+      const response = await fetch("http://localhost:5000/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password })
+      });
+      const data = await response.json();
+      if (response.ok) {
+        alert(language === "ru" ? "✅ Регистрация успешна! Войдите в систему." : "✅ Registration successful! Please log in.");
+        showLogin();
+      } else {
+        document.getElementById("register-error").textContent = `❌ ${data.error}`;
+      }
+    }
+
+    async function login() {
+      const username = document.getElementById("login-username").value;
+      const password = document.getElementById("login-password").value;
+      const response = await fetch("http://localhost:5000/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password })
+      });
+      const data = await response.json();
+      if (response.ok) {
+        token = data.token;
+        document.getElementById("login-section").style.display = "none";
+        document.getElementById("weather-section").style.display = "block";
+      } else {
+        document.getElementById("login-error").textContent = `❌ ${data.error}`;
+      }
+    }
+
+    async function fetchWeather() {
+      const city = document.getElementById("city").value;
+      const field = document.getElementById("field").value;
+      if (!city) {
+        return alert(language === "ru" ? "⚠️ Введите название города!" : "⚠️ Enter a city name!");
+      }
+
+      const weatherResponse = await fetch(`http://localhost:5000/api/weather?city=${city}`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      const weatherData = await weatherResponse.json();
+      if (!weatherResponse.ok) return alert(`❌ ${weatherData.error}`);
+
+      const statsResponse = await fetch(`http://localhost:5000/api/weather/metrics?city=${city}&field=${field}`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      const stats = await statsResponse.json();
+      document.getElementById("avg").textContent = `${language === "ru" ? "Среднее" : "Average"}: ${stats.avg}`;
+      document.getElementById("min").textContent = `${language === "ru" ? "Минимум" : "Min"}: ${stats.min}`;
+      document.getElementById("max").textContent = `${language === "ru" ? "Максимум" : "Max"}: ${stats.max}`;
+      document.getElementById("stdDev").textContent = `${language === "ru" ? "Стандартное отклонение" : "Std Dev"}: ${stats.stdDev}`;
+
+      const historyResponse = await fetch(`http://localhost:5000/api/weather/history?city=${city}&field=${field}`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      const historyData = await historyResponse.json();
+      const timestamps = historyData.map(item => new Date(item.timestamp).toLocaleString());
+      const values = historyData.map(item => item[field]);
+      renderChart(timestamps, values, `${field} ${language === "ru" ? "для" : "in"} ${city}`);
+    }
+
+    function renderChart(labels, data, label) {
+      const ctx = document.getElementById("weatherChart").getContext("2d");
+      if (chartInstance) chartInstance.destroy();
+      chartInstance = new Chart(ctx, {
+        type: "line",
+        data: { labels, datasets: [{ label, data, borderColor: "blue", borderWidth: 2 }] },
+        options: { responsive: true }
+      });
+    }
+  </script>
 </body>
 </html>
