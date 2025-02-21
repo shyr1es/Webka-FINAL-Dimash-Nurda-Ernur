@@ -13,8 +13,8 @@
 ## Установка и запуск
 ### 1. Клонирование репозитория
 ```sh
-git clone https://github.com/your-repo/weather-app.git
-cd weather-app
+git clone https://github.com/shyr1es/NoSQL_final-T.Dinmukhammed-M.Adilkhan.git
+cd analytics-platform
 ```
 
 ### 2. Установка зависимостей
@@ -25,9 +25,10 @@ npm install
 ### 3. Создание `.env` файла
 Создайте файл `.env` в корневой папке и добавьте:
 ```env
-PORT=3001
-MONGO_URI=your-mongodb-connection-string
-JWT_SECRET=your-secret-key
+MONGO_URI=mongodb://127.0.0.1:27017/analytics
+PORT=5000
+OPENWEATHER_API_KEY=1519a798d51342ce3faa2579955f87fd
+JWT_SECRET=supersecretkey
 ```
 
 ### 4. Запуск сервера
