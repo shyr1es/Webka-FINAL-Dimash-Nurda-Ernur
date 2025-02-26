@@ -6,6 +6,7 @@ const cors = require("cors");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const morgan = require("morgan");
+const path = require("path"); // 🔥 Добавлено для работы с путями
 
 const app = express();
 app.use(cors());
@@ -161,11 +162,12 @@ app.get("/api/weather/history", authMiddleware, async (req, res) => {
   }
 });
 
-// 🛡️ Маршрут по умолчанию
-app.get("/*", (req, res) => {
-  res.send("🚀 Сервер работает! Статические файлы не обслуживаются.");
-});
-
+// 🔥 Обслуживание статических файлов (index.html загружается автоматически)
+app.use(express.static(path.join(__dirname, "public")));
+app.get('/', (req, res) => {
+    res.sendFile(__dirname + '/index.html');
+  });
+  
 // 🚀 Запуск сервера
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, "0.0.0.0", () =>
