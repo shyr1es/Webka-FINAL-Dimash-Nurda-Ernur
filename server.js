@@ -12,13 +12,15 @@ app.use(cors());
 app.use(express.json());
 app.use(morgan("dev"));
 
-// 🔗 Подключение к MongoDB
-mongoose.connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-})
+// 🔗 Подключение к MongoDB (устаревшие опции удалены)
+mongoose.connect(process.env.MONGO_URI)
     .then(() => console.log("✅ Connected to MongoDB"))
     .catch(err => console.error("❌ MongoDB connection error:", err));
+
+// 🏠 Корневой маршрут
+app.get("/", (req, res) => {
+    res.send("🌟 Сервер успешно работает и готов к деплою!");
+});
 
 // 🛢️ Схема пользователя
 const userSchema = new mongoose.Schema({
@@ -87,7 +89,7 @@ app.post("/api/auth/login", async (req, res) => {
     }
 });
 
-// 🌦️ Получение погоды и автоматическое сохранение в MongoDB
+// 🌦️ Получение погоды и сохранение в MongoDB
 app.get("/api/weather", authMiddleware, async (req, res) => {
     try {
         const { city } = req.query;
@@ -114,7 +116,7 @@ app.get("/api/weather", authMiddleware, async (req, res) => {
     }
 });
 
-// 📊 Получение статистики
+// 📊 Получение статистики (ошибка 'j' удалена)
 app.get("/api/weather/metrics", authMiddleware, async (req, res) => {
     try {
         const { city, field } = req.query;
@@ -130,7 +132,7 @@ app.get("/api/weather/metrics", authMiddleware, async (req, res) => {
                 },
             },
         ]);
-        res.json(stats.length ? stats[0] : { error: "⚠️ No data found" });j
+        res.json(stats.length ? stats[0] : { error: "⚠️ No data found" });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
