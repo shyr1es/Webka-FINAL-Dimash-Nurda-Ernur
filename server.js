@@ -6,25 +6,18 @@ const cors = require("cors");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const morgan = require("morgan");
-const path = require("path");
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(morgan("dev"));
 
-// 📁 Обслуживание статических файлов из папки "public"
-app.use(express.static(path.join(__dirname, "public")));
-
 // 🔗 Подключение к MongoDB
 const MONGO_URI = process.env.MONGO_URI_CLOUD || process.env.MONGO_URI_LOCAL;
 if (!MONGO_URI) throw new Error("❌ MONGO_URI не указан в .env файле");
 
 mongoose
-  .connect(MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
+  .connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log("✅ Connected to MongoDB"))
   .catch((err) => console.error("❌ MongoDB connection error:", err));
 
@@ -168,9 +161,9 @@ app.get("/api/weather/history", authMiddleware, async (req, res) => {
   }
 });
 
-// 🛡️ Маршрут по умолчанию для index.html из папки public
+// 🛡️ Маршрут по умолчанию
 app.get("/*", (req, res) => {
-  res.sendFile(path.resolve(__dirname, "public", "index.html"));
+  res.send("🚀 Сервер работает! Статические файлы не обслуживаются.");
 });
 
 // 🚀 Запуск сервера
