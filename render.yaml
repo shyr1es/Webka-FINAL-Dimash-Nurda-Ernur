@@ -1,12 +1,7 @@
 services:
-  - type: web
+  - type: static
     name: webka-final
-    env: node
+    env: static
     plan: free
     buildCommand: npm install && npm run build
-    startCommand: npx serve -s dist
-    buildFilter:
-      paths:
-        - "src/**"
-        - "public/**"
     staticPublishPath: dist
