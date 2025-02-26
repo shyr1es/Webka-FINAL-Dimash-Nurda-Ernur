@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: webka-final
+    env: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npx serve -s dist
+    buildFilter:
+      paths:
+        - "src/**"
+        - "public/**"
+    staticPublishPath: dist
