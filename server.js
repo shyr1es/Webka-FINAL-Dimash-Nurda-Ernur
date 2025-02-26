@@ -4,7 +4,7 @@ const mongoose = require("mongoose");
 const axios = require("axios");
 const cors = require("cors");
 const jwt = require("jsonwebtoken");
-const bcrypt = require("bcrypt");
+const bcrypt = require('bcryptjs');
 const morgan = require("morgan");
 
 const app = express();
@@ -130,7 +130,7 @@ app.get("/api/weather/metrics", authMiddleware, async (req, res) => {
                 },
             },
         ]);
-        res.json(stats.length ? stats[0] : { error: "⚠️ No data found" });
+        res.json(stats.length ? stats[0] : { error: "⚠️ No data found" });j
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
